@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <title>Weather Checker</title>
+    <h1 class = mainfont>Weather Checker</h1>
+    <link rel = "stylesheet" href = "style.css">
+  </head>
+
+  <body> 
+    <p class = "whiteFont">
+      Use the form below to search for the weather in any American city. 
+    </p>
+
+    <form id = "weatherForm" class="box" autocomplete=off onsubmit="searchWeather();return false">
+      <label for="city">City:</label>
+      <br>
+      <input type="text" id ="city">
+      <br>
+      <br>
+      <label for="state">State (abbreviated):</label>
+      <br>
+      <input type="text" id="state" maxlength="2">
+      <br>
+      <br> 
+      <input type="submit" value="Submit">
+    </form>
+
+    <div id="detailsSection"> </div> 
+
+    <script>
+
+      searchWeather = function(){
+
+        // Reset button
+        let btn = document.createElement("button");
+        btn.innerHTML = "Search for New City";
+        document.getElementById("detailsSection").appendChild(btn);
+        btn.type = "submit";
+        btn.onclick = function () {
+          window.location.reload();
+        };
+
+        // What the User inputs
+        var city = document.getElementById("city").value;
+        var state = document.getElementById("state").value;  
+
+        const options = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Host': 'community-open-weather-map.p.rapidapi.com',
+            'X-RapidAPI-Key': 'c69b082c7emsh885bf33091e6fb9p1e10f9jsnd6755dc494c5'
+          }
+        };
+
+        // Collecting the weather info 
+        fetch("https://community-open-weather-map.p.rapidapi.com/forecast?q=" + city + "%2C" + state + "%2C" + "us&units=imperial", options)
+          .then(response => response.json())
+          .then(response => {
+            var city= document.getElementById("city").value;
+            var state= document.getElementById("state").value;  
+
+            // Title Text
+            let weatherText = document.createElement("h1");
+            let message = ("Forecast in " + city + ", " + state);
+            weatherText.appendChild(document.createTextNode(message));
+            document.getElementById("detailsSection").appendChild(weatherText);
+
+            var lastDay = null;
+
+            for(i in response.list) { 
+
+              const currentDay = new Date(response.list[i].dt * 1000).toLocaleString('en-us', {  weekday: 'long', timeZone: 'UTC' });
+              if (currentDay != lastDay) {
+                let dayOfWeek = document.createElement("h1");
+                dayOfWeek.appendChild(document.createTextNode(currentDay));
+                document.getElementById("detailsSection").appendChild(dayOfWeek);
+              }
+              lastDay = currentDay
+
+              let timeOfDay = document.createElement("h3");
+              let currentTime = new Date(response.list[i].dt * 1000).toLocaleString('en-us', {hour: '2-digit', minute:'2-digit', timeZone: 'UTC'});
+              timeOfDay.appendChild(document.createTextNode(currentTime));
+              document.getElementById("detailsSection").appendChild(timeOfDay);
+
+              // Defining temp
+              let temperature = (response.list[i].main.temp)
+
+              // Defining skies
+              let skies = (response.list[i].weather[0].description);
+
+              // Defining winds
+              let winds = (response.list[i].wind.speed)
+
+              let weatherDetails = document.createElement("div");
+              let detailsMessage = ("Average of " + temperature + " degrees, " + skies + ", and wind speeds of " + winds + " miles per hour");
+              weatherDetails.appendChild(document.createTextNode(detailsMessage));
+              document.getElementById("detailsSection").appendChild(weatherDetails);                
+            }
+        }).catch(err => console.error(err));
+      } 
+    </script> 
+  </body>
+</html>
